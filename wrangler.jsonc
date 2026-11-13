@@ -1,12 +1,15 @@
 {
-  // Static site served by Cloudflare Workers Static Assets.
-  // Deploy: `npm run deploy`  (or connect the GitHub repo in the Cloudflare dashboard)
+  // Static site (Workers Static Assets) + a tiny Worker that only handles /api/* (CMS GitHub login).
+  // Deploy: `npm run deploy`  (or push to GitHub – Cloudflare builds it)
+  // Secrets (Cloudflare dashboard → Worker → Settings → Variables and secrets): GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "astro-ews",
+  "main": "worker/index.js",
   "compatibility_date": "2026-11-01",
   "assets": {
     "directory": "./dist",
     "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
   }
 }

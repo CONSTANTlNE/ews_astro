@@ -1,0 +1,77 @@
+backend:
+  name: github
+  repo: CONSTANTlNE/ews_astro
+  branch: main
+  # Your site origin + /api (login endpoints live in this same Worker). Must match the site you open /admin/ on.
+  base_url: https://astro-ews.gmta-constantine.workers.dev/api
+
+site_url: https://astro-ews.gmta-constantine.workers.dev
+display_url: https://astro-ews.gmta-constantine.workers.dev
+media_folder: public/images
+public_folder: /images
+
+i18n:
+  structure: multiple_folders   # src/content/<collection>/<lang>/<slug>.md  (matches the site)
+  locales: [en, ka]
+  default_locale: en
+
+collections:
+  - name: services
+    label: Services
+    folder: src/content/services
+    extension: md
+    format: frontmatter
+    create: true
+    slug: '{{slug}}'
+    i18n: true
+    fields:
+      - { name: title, label: Title, widget: string, i18n: true }
+      - { name: description, label: Description (SEO), widget: text, i18n: true }
+      - { name: icon, label: Icon, widget: select, options: [code, design, search, cloud], i18n: duplicate }
+      - { name: image, label: Image (Unsplash "photo-…" id or /images/file.jpg), widget: string, i18n: duplicate }
+      - { name: order, label: Order, widget: number, value_type: int, default: 0, i18n: duplicate }
+      - { name: price, label: Price, widget: string, required: false, i18n: true }
+      - { name: features, label: Features, widget: list, field: { name: feature, label: Feature, widget: string }, i18n: true }
+      - { name: body, label: Body, widget: markdown, i18n: true }
+
+  - name: projects
+    label: Projects
+    folder: src/content/projects
+    extension: md
+    format: frontmatter
+    create: true
+    slug: '{{slug}}'
+    i18n: true
+    fields:
+      - { name: title, label: Title, widget: string, i18n: true }
+      - { name: description, label: Description (SEO), widget: text, i18n: true }
+      - { name: image, label: Cover image, widget: string, i18n: duplicate }
+      - { name: year, label: Year, widget: number, value_type: int, i18n: duplicate }
+      - { name: client, label: Client, widget: string, i18n: duplicate }
+      - { name: role, label: Role, widget: string, i18n: true }
+      - { name: tags, label: Tags, widget: list, i18n: duplicate }
+      - { name: gallery, label: Gallery, widget: list, required: false, i18n: duplicate }
+      - { name: liveUrl, label: Live URL, widget: string, required: false, i18n: duplicate }
+      - { name: repoUrl, label: Repo URL, widget: string, required: false, i18n: duplicate }
+      - { name: featured, label: Featured, widget: boolean, default: false, i18n: duplicate }
+      - { name: body, label: Body, widget: markdown, i18n: true }
+
+  - name: blog
+    label: Blog
+    folder: src/content/blog
+    extension: md
+    format: frontmatter
+    create: true
+    slug: '{{slug}}'
+    i18n: true
+    sortable_fields: [pubDate, title]
+    fields:
+      - { name: title, label: Title, widget: string, i18n: true }
+      - { name: description, label: Description (SEO), widget: text, i18n: true }
+      - { name: pubDate, label: Publish date, widget: datetime, i18n: duplicate }
+      - { name: updatedDate, label: Updated date, widget: datetime, required: false, i18n: duplicate }
+      - { name: image, label: Cover image, widget: string, i18n: duplicate }
+      - { name: tags, label: Tags, widget: list, i18n: true }
+      - { name: author, label: Author, widget: string, default: EWS Studio, i18n: duplicate }
+      - { name: draft, label: Draft, widget: boolean, default: false, i18n: duplicate }
+      - { name: body, label: Body, widget: markdown, i18n: true }
