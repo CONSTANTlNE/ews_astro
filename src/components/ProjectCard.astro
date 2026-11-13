@@ -1,0 +1,18 @@
+---
+import Img from './Img.astro';
+import Icon from './Icon.astro';
+import { l, useTranslations } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+const { lang, slug, data, delay = 0 } = Astro.props as { lang: Lang; slug: string; data: any; delay?: number };
+const t = useTranslations(lang);
+---
+<a class="card" href={l(lang, `/projects/${slug}/`)} data-reveal style={`--d:${delay}ms`}>
+  <div class="thumb"><Img src={data.image} alt={data.title} width={800} height={500} /></div>
+  <div class="body">
+    <div class="meta"><span>{data.client}</span><span>·</span><span>{data.year}</span></div>
+    <h3>{data.title}</h3>
+    <p>{data.description}</p>
+    <div class="tags" style="margin-top:.6rem">{data.tags.slice(0, 4).map((x: string) => <span class="tag">{x}</span>)}</div>
+    <span class="more">{t('cta.readmore')} <Icon name="arrow" size={18} /></span>
+  </div>
+</a>

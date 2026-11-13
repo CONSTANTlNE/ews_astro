@@ -1,0 +1,29 @@
+---
+import { useTranslations, l, switchPath } from '../i18n/utils';
+import { languages, type Lang } from '../i18n/ui';
+import { SITE } from '../config';
+import Icon from './Icon.astro';
+const lang = (Astro.currentLocale ?? 'en') as Lang;
+const t = useTranslations(lang);
+const path = Astro.url.pathname;
+const other: Lang = lang === 'en' ? 'ka' : 'en';
+const links = [
+  ['/', t('nav.home')], ['/services/', t('nav.services')], ['/projects/', t('nav.projects')], ['/blog/', t('nav.blog')], ['/contact/', t('nav.contact')],
+] as const;
+const active = (href: string) => (href === '/' ? path === l(lang, '/') : path.startsWith(l(lang, href)));
+---
+<header class="header" id="header">
+  <div class="container">
+    <a class="logo" href={l(lang, '/')} aria-label={SITE.name}><img src="/favicon.svg" alt="" width="32" height="32" />{SITE.name}</a>
+    <nav class="nav" id="nav" aria-label="Main">
+      {links.map(([href, label]) => <a href={l(lang, href)} aria-current={active(href) ? 'page' : undefined}>{label}</a>)}
+    </nav>
+    <div class="tools">
+      <a class="icon-btn" href={switchPath(path, other)} hreflang={other} lang={other} aria-label={`${languages[other]}`} title={languages[other]}>{other === 'ka' ? 'ქა' : 'EN'}</a>
+      <button class="icon-btn theme-toggle" id="theme-toggle" type="button" aria-label={t('theme.toggle')}>
+        <Icon name="sun" size={18} /><Icon name="moon" size={18} />
+      </button>
+      <button class="icon-btn burger" id="burger" type="button" aria-label={t('nav.menu')} aria-expanded="false" aria-controls="nav"><Icon name="menu" size={18} /></button>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,17 @@
+---
+import { imgUrl, imgSrcset } from '../lib/img';
+interface Props { src: string; alt: string; width?: number; height?: number; sizes?: string; eager?: boolean; widths?: number[]; }
+const { src, alt, width = 1200, height = 750, sizes = '(max-width: 700px) 100vw, 640px', eager = false, widths = [480, 800, 1200, 1600] } = Astro.props;
+const ratio = width / height;
+---
+<img
+  src={imgUrl(src, Math.min(width, 1200), Math.round(Math.min(width, 1200) / ratio))}
+  srcset={imgSrcset(src, widths, ratio)}
+  sizes={sizes}
+  alt={alt}
+  width={width}
+  height={height}
+  loading={eager ? 'eager' : 'lazy'}
+  fetchpriority={eager ? 'high' : undefined}
+  decoding={eager ? 'sync' : 'async'}
+/>

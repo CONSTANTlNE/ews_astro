@@ -1,0 +1,58 @@
+---
+import { render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import Img from '../../../components/Img.astro';
+import Icon from '../../../components/Icon.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import ServiceCard from '../../../components/ServiceCard.astro';
+import CTA from '../../../components/CTA.astro';
+import { getServices } from '../../../lib/content';
+import { useTranslations, l } from '../../../i18n/utils';
+import { languages, type Lang } from '../../../i18n/ui';
+import { SITE } from '../../../config';
+
+export async function getStaticPaths() {
+  const out = [];
+  for (const lang of Object.keys(languages) as Lang[])
+    for (const s of await getServices(lang)) out.push({ params: { lang, slug: s.slug }, props: { entry: s } });
+  return out;
+}
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const others = (await getServices(lang)).filter((s) => s.slug !== entry.slug);
+const site = Astro.site!;
+const crumbs = [{ name: t('nav.home'), href: l(lang, '/') }, { name: t('nav.services'), href: l(lang, '/services/') }, { name: d.title }];
+const ld = [
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, ...(c.href ? { item: new URL(c.href, site).href } : {}) })) },
+  { '@context': 'https://schema.org', '@type': 'Service', name: d.title, description: d.description, serviceType: d.title, inLanguage: lang, provider: { '@id': `${site.origin}/#org` }, areaServed: ['GE', 'Worldwide'], url: Astro.url.href },
+];
+---
+<Base title={d.title} description={d.description} image={d.image} jsonLd={ld}>
+  <section class="page-head"><div class="container hero-in">
+    <Breadcrumbs items={crumbs} />
+    <h1>{d.title}</h1><p class="lead">{d.description}</p>
+  </div></section>
+  <section class="section" style="padding-top:1rem"><div class="container detail">
+    <article>
+      <div class="cover" data-reveal="scale"><Img src={d.image} alt={d.title} width={1200} height={675} eager sizes="(max-width: 960px) 100vw, 780px" /></div>
+      <div class="prose" data-reveal><Content /></div>
+      {d.features.length > 0 && <div class="prose" data-reveal>
+        <h2>{t('services.includes')}</h2>
+        <ul class="check-list">{d.features.map((f) => <li><Icon name="check" size={20} /><span>{f}</span></li>)}</ul>
+      </div>}
+    </article>
+    <aside class="side" data-reveal>
+      {d.price && <dl><dt>{t('services.from')}</dt><dd style="font-size:1.6rem">{d.price}</dd></dl>}
+      <a class="btn btn-primary" href={l(lang, '/contact/')}>{t('cta.start')} <Icon name="arrow" size={18} /></a>
+      <a class="btn btn-ghost" href={`mailto:${SITE.email}`}>{SITE.email}</a>
+    </aside>
+  </div></section>
+  <section class="section alt"><div class="container">
+    <div class="section-head"><h2>{t('services.other')}</h2></div>
+    <div class="grid cols-3">{others.map((s, i) => <ServiceCard lang={lang} slug={s.slug} data={s.data} delay={i * 100} />)}</div>
+  </div></section>
+  <CTA />
+</Base>

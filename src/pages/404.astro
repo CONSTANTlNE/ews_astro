@@ -1,0 +1,12 @@
+---
+import Base from '../layouts/Base.astro';
+import { ui } from '../i18n/ui';
+// Single 404 page for both languages (Cloudflare serves /404.html for any missing path).
+---
+<Base title="404" description="Page not found" noindex noAlternates>
+  <section class="page-head" style="min-height:60vh;display:grid;align-items:center"><div class="container hero-in">
+    <h1 class="grad-text">404</h1>
+    <p class="lead">{ui.en['404.lead']}<br />{ui.ka['404.lead']}</p>
+    <p style="display:flex;gap:.8rem;flex-wrap:wrap"><a class="btn btn-primary" href="/en/">{ui.en['404.home']}</a><a class="btn btn-ghost" href="/ka/">{ui.ka['404.home']}</a></p>
+  </div></section>
+</Base>

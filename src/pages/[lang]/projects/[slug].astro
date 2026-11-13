@@ -1,0 +1,62 @@
+---
+import { render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import Img from '../../../components/Img.astro';
+import Icon from '../../../components/Icon.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import ProjectCard from '../../../components/ProjectCard.astro';
+import CTA from '../../../components/CTA.astro';
+import { getProjects } from '../../../lib/content';
+import { useTranslations, l } from '../../../i18n/utils';
+import { languages, type Lang } from '../../../i18n/ui';
+import { imgUrl } from '../../../lib/img';
+
+export async function getStaticPaths() {
+  const out = [];
+  for (const lang of Object.keys(languages) as Lang[])
+    for (const p of await getProjects(lang)) out.push({ params: { lang, slug: p.slug }, props: { entry: p } });
+  return out;
+}
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const more = (await getProjects(lang)).filter((p) => p.slug !== entry.slug).slice(0, 2);
+const site = Astro.site!;
+const crumbs = [{ name: t('nav.home'), href: l(lang, '/') }, { name: t('nav.projects'), href: l(lang, '/projects/') }, { name: d.title }];
+const ld = [
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, ...(c.href ? { item: new URL(c.href, site).href } : {}) })) },
+  { '@context': 'https://schema.org', '@type': 'CreativeWork', name: d.title, description: d.description, image: imgUrl(d.image, 1200, 630), datePublished: `${d.year}-01-01`, inLanguage: lang, keywords: d.tags.join(', '), creator: { '@id': `${site.origin}/#org` }, url: Astro.url.href, ...(d.liveUrl ? { sameAs: d.liveUrl } : {}) },
+];
+---
+<Base title={d.title} description={d.description} image={d.image} jsonLd={ld}>
+  <section class="page-head"><div class="container hero-in">
+    <Breadcrumbs items={crumbs} /><h1>{d.title}</h1><p class="lead">{d.description}</p>
+  </div></section>
+  <section class="section" style="padding-top:1rem"><div class="container detail">
+    <article>
+      <div class="cover" data-reveal="scale"><Img src={d.image} alt={d.title} width={1200} height={675} eager sizes="(max-width: 960px) 100vw, 780px" /></div>
+      <div class="prose" data-reveal><Content /></div>
+      {d.gallery.length > 0 && <>
+        <h2 style="margin-top:2.5rem" data-reveal>{t('project.gallery')}</h2>
+        <div class="gallery">{d.gallery.map((g, i) => <div data-reveal style={`--d:${i * 100}ms`}><Img src={g} alt={`${d.title} – ${i + 1}`} width={800} height={600} sizes="(max-width: 700px) 100vw, 380px" /></div>)}</div>
+      </>}
+    </article>
+    <aside class="side" data-reveal>
+      <dl style="display:grid;gap:1rem;margin:0">
+        <div><dt>{t('project.client')}</dt><dd>{d.client}</dd></div>
+        <div><dt>{t('project.year')}</dt><dd>{d.year}</dd></div>
+        <div><dt>{t('project.role')}</dt><dd>{d.role}</dd></div>
+        <div><dt>{t('project.stack')}</dt><dd class="tags" style="margin-top:.4rem">{d.tags.map((x) => <span class="tag">{x}</span>)}</dd></div>
+      </dl>
+      {d.liveUrl && <a class="btn btn-primary" href={d.liveUrl} target="_blank" rel="noopener">{t('cta.visit')} <Icon name="external" size={18} /></a>}
+      {d.repoUrl && <a class="btn btn-ghost" href={d.repoUrl} target="_blank" rel="noopener">{t('cta.source')} <Icon name="external" size={18} /></a>}
+    </aside>
+  </div></section>
+  <section class="section alt"><div class="container">
+    <div class="section-head"><h2>{t('project.more')}</h2></div>
+    <div class="grid cols-2">{more.map((p, i) => <ProjectCard lang={lang} slug={p.slug} data={p.data} delay={i * 100} />)}</div>
+  </div></section>
+  <CTA />
+</Base>

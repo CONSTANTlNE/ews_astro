@@ -1,0 +1,56 @@
+---
+import { render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import Img from '../../../components/Img.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import PostCard from '../../../components/PostCard.astro';
+import CTA from '../../../components/CTA.astro';
+import { getPosts } from '../../../lib/content';
+import { useTranslations, l, formatDate, readingTime } from '../../../i18n/utils';
+import { languages, type Lang } from '../../../i18n/ui';
+import { imgUrl } from '../../../lib/img';
+import { SITE } from '../../../config';
+
+export async function getStaticPaths() {
+  const out = [];
+  for (const lang of Object.keys(languages) as Lang[])
+    for (const p of await getPosts(lang)) out.push({ params: { lang, slug: p.slug }, props: { entry: p } });
+  return out;
+}
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const d = entry.data;
+const mins = readingTime(entry.body ?? '', lang);
+const more = (await getPosts(lang)).filter((p) => p.slug !== entry.slug).slice(0, 3);
+const site = Astro.site!;
+const crumbs = [{ name: t('nav.home'), href: l(lang, '/') }, { name: t('nav.blog'), href: l(lang, '/blog/') }, { name: d.title }];
+const ld = [
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, ...(c.href ? { item: new URL(c.href, site).href } : {}) })) },
+  { '@context': 'https://schema.org', '@type': 'BlogPosting', headline: d.title, description: d.description, image: imgUrl(d.image, 1200, 630), datePublished: d.pubDate.toISOString(), dateModified: (d.updatedDate ?? d.pubDate).toISOString(), inLanguage: lang, keywords: d.tags.join(', '), author: { '@type': 'Person', name: d.author }, publisher: { '@id': `${site.origin}/#org` }, mainEntityOfPage: Astro.url.href },
+];
+---
+<Base title={d.title} description={d.description} image={d.image} type="article" publishedTime={d.pubDate} modifiedTime={d.updatedDate ?? d.pubDate} jsonLd={ld}>
+  <article>
+    <section class="page-head"><div class="container hero-in" style="max-width:860px">
+      <Breadcrumbs items={crumbs} />
+      <h1 style="font-size:clamp(2rem,4.5vw,3.2rem)">{d.title}</h1>
+      <div class="meta">
+        <span>{t('blog.by')} {d.author}</span><span>·</span>
+        <time datetime={d.pubDate.toISOString()}>{formatDate(d.pubDate, lang)}</time><span>·</span>
+        <span>{mins} {t('blog.minRead')}</span>
+      </div>
+    </div></section>
+    <div class="container" style="max-width:860px">
+      <div class="cover" data-reveal="scale"><Img src={d.image} alt={d.title} width={1200} height={675} eager sizes="(max-width: 900px) 100vw, 860px" /></div>
+      <div class="prose" data-reveal style="margin-inline:auto"><Content /></div>
+      <div class="tags" style="margin:2rem 0">{d.tags.map((x) => <span class="tag">#{x}</span>)}</div>
+    </div>
+  </article>
+  <section class="section alt"><div class="container">
+    <div class="section-head"><h2>{t('blog.related')}</h2></div>
+    <div class="grid cols-3">{more.map((p, i) => <PostCard lang={lang} slug={p.slug} data={p.data} delay={i * 100} />)}</div>
+  </div></section>
+  <CTA />
+</Base>

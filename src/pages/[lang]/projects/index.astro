@@ -1,0 +1,28 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ProjectCard from '../../../components/ProjectCard.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CTA from '../../../components/CTA.astro';
+import { getProjects } from '../../../lib/content';
+import { useTranslations, l } from '../../../i18n/utils';
+import { languages, type Lang } from '../../../i18n/ui';
+export function getStaticPaths() { return Object.keys(languages).map((lang) => ({ params: { lang } })); }
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const projects = await getProjects(lang);
+const crumbs = [{ name: t('nav.home'), href: l(lang, '/') }, { name: t('nav.projects') }];
+const site = Astro.site!;
+const ld = [
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, ...(c.href ? { item: new URL(c.href, site).href } : {}) })) },
+  { '@context': 'https://schema.org', '@type': 'CollectionPage', name: t('projects.title'), url: Astro.url.href, hasPart: projects.map((p) => ({ '@type': 'CreativeWork', name: p.data.title, url: new URL(l(lang, `/projects/${p.slug}/`), site).href })) },
+];
+---
+<Base title={t('projects.title')} description={t('seo.projects.desc')} jsonLd={ld}>
+  <section class="page-head"><div class="container hero-in">
+    <Breadcrumbs items={crumbs} /><h1>{t('projects.title')}</h1><p class="lead">{t('projects.lead')}</p>
+  </div></section>
+  <section class="section" style="padding-top:1rem"><div class="container">
+    <div class="grid cols-2">{projects.map((p, i) => <ProjectCard lang={lang} slug={p.slug} data={p.data} delay={(i % 2) * 100} />)}</div>
+  </div></section>
+  <CTA />
+</Base>

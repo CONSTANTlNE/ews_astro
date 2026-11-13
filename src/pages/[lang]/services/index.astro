@@ -1,0 +1,26 @@
+---
+import Base from '../../../layouts/Base.astro';
+import ServiceCard from '../../../components/ServiceCard.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import CTA from '../../../components/CTA.astro';
+import { getServices } from '../../../lib/content';
+import { useTranslations, l } from '../../../i18n/utils';
+import { languages, type Lang } from '../../../i18n/ui';
+export function getStaticPaths() { return Object.keys(languages).map((lang) => ({ params: { lang } })); }
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const services = await getServices(lang);
+const crumbs = [{ name: t('nav.home'), href: l(lang, '/') }, { name: t('nav.services') }];
+const site = Astro.site!;
+const ld = [{ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.name, ...(c.href ? { item: new URL(c.href, site).href } : {}) })) }];
+---
+<Base title={t('services.title')} description={t('seo.services.desc')} jsonLd={ld}>
+  <section class="page-head"><div class="container hero-in">
+    <Breadcrumbs items={crumbs} />
+    <h1>{t('services.title')}</h1><p class="lead">{t('services.lead')}</p>
+  </div></section>
+  <section class="section" style="padding-top:1rem"><div class="container">
+    <div class="grid cols-2">{services.map((s, i) => <ServiceCard lang={lang} slug={s.slug} data={s.data} delay={i * 100} />)}</div>
+  </div></section>
+  <CTA />
+</Base>

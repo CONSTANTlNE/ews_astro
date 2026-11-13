@@ -1,0 +1,14 @@
+---
+import { useTranslations, l } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+import Icon from './Icon.astro';
+const lang = (Astro.currentLocale ?? 'en') as Lang;
+const t = useTranslations(lang);
+---
+<section class="section"><div class="container">
+  <div class="cta" data-reveal="scale">
+    <h2>{t('home.cta.title')}</h2>
+    <p>{t('home.cta.lead')}</p>
+    <a class="btn" href={l(lang, '/contact/')}>{t('cta.start')} <Icon name="arrow" size={18} /></a>
+  </div>
+</div></section>

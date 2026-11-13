@@ -1,0 +1,75 @@
+---
+import Base from '../../layouts/Base.astro';
+import Img from '../../components/Img.astro';
+import Icon from '../../components/Icon.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import PostCard from '../../components/PostCard.astro';
+import CTA from '../../components/CTA.astro';
+import { getServices, getProjects, getPosts } from '../../lib/content';
+import { useTranslations, l } from '../../i18n/utils';
+import { languages, type Lang } from '../../i18n/ui';
+
+export function getStaticPaths() {
+  return Object.keys(languages).map((lang) => ({ params: { lang } }));
+}
+const lang = Astro.params.lang as Lang;
+const t = useTranslations(lang);
+const services = await getServices(lang);
+const projects = (await getProjects(lang)).slice(0, 3);
+const posts = (await getPosts(lang)).slice(0, 3);
+const stack = ['Astro', 'TypeScript', 'React', 'Next.js', 'Node.js', 'Cloudflare', 'Tailwind', 'PostgreSQL', 'Figma', 'GraphQL', 'Vite', 'Playwright'];
+---
+<Base title={t('seo.home.title')} description={t('seo.home.desc')} image="photo-1498050108023-c5249f4df085">
+  <section class="hero">
+    <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+    <div class="container hero-in">
+      <span class="eyebrow">{t('home.badge')}</span>
+      <h1>{t('home.title')}</h1>
+      <p class="lead">{t('home.lead')}</p>
+      <div class="actions">
+        <a class="btn btn-primary" href={l(lang, '/contact/')}>{t('cta.start')} <Icon name="arrow" size={18} /></a>
+        <a class="btn btn-ghost" href={l(lang, '/projects/')}>{t('cta.projects')}</a>
+      </div>
+      <div class="hero-img"><Img src="photo-1498050108023-c5249f4df085" alt={t('home.title')} width={1600} height={700} eager sizes="(max-width: 1200px) 100vw, 1160px" /></div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true"><div class="marquee-track">{[...stack, ...stack].map((s) => <span>{s}</span>)}</div></div>
+
+  <section class="section"><div class="container">
+    <div class="stats">
+      <div class="stat" data-reveal><b data-count="120" data-suffix="+">120+</b><span>{t('home.stats.projects')}</span></div>
+      <div class="stat" data-reveal style="--d:100ms"><b data-count="9" data-suffix="+">9+</b><span>{t('home.stats.years')}</span></div>
+      <div class="stat" data-reveal style="--d:200ms"><b data-count="100">100</b><span>{t('home.stats.perf')}</span></div>
+      <div class="stat" data-reveal style="--d:300ms"><b data-count="85" data-suffix="+">85+</b><span>{t('home.stats.clients')}</span></div>
+    </div>
+  </div></section>
+
+  <section class="section alt"><div class="container">
+    <div class="section-head" data-reveal><h2>{t('home.services.title')}</h2><p>{t('home.services.lead')}</p></div>
+    <div class="grid cols-3">{services.map((s, i) => <ServiceCard lang={lang} slug={s.slug} data={s.data} delay={i * 100} />)}</div>
+  </div></section>
+
+  <section class="section"><div class="container">
+    <div class="section-head" data-reveal><h2>{t('home.projects.title')}</h2><p>{t('home.projects.lead')}</p></div>
+    <div class="grid cols-3">{projects.map((p, i) => <ProjectCard lang={lang} slug={p.slug} data={p.data} delay={i * 100} />)}</div>
+    <p style="margin-top:2rem" data-reveal><a class="btn btn-ghost" href={l(lang, '/projects/')}>{t('cta.viewAll')} <Icon name="arrow" size={18} /></a></p>
+  </div></section>
+
+  <section class="section alt"><div class="container">
+    <div class="section-head" data-reveal><h2>{t('home.process.title')}</h2><p>{t('home.process.lead')}</p></div>
+    <div class="steps">
+      {[1, 2, 3, 4].map((n, i) => (
+        <div class="step" data-reveal style={`--d:${i * 100}ms`}><h3>{t(`home.process.${n}.t` as any)}</h3><p>{t(`home.process.${n}.d` as any)}</p></div>
+      ))}
+    </div>
+  </div></section>
+
+  <section class="section"><div class="container">
+    <div class="section-head" data-reveal><h2>{t('home.blog.title')}</h2><p>{t('home.blog.lead')}</p></div>
+    <div class="grid cols-3">{posts.map((p, i) => <PostCard lang={lang} slug={p.slug} data={p.data} delay={i * 100} />)}</div>
+  </div></section>
+
+  <CTA />
+</Base>
